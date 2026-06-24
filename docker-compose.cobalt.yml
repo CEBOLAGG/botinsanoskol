@@ -1,0 +1,28 @@
+# Sobe a SUA instancia do cobalt (a API oficial api.cobalt.tools e proibida para bots).
+# Uso:  docker compose -f docker-compose.cobalt.yml up -d
+# Depois o bot fala com ela em http://localhost:9000/  (COBALT_BASE_URL no .env).
+
+services:
+  cobalt-api:
+    image: ghcr.io/imputnet/cobalt:11
+    init: true
+    read_only: true
+    restart: unless-stopped
+    container_name: cobalt-api
+    ports:
+      - "9000:9000/tcp"
+    environment:
+      # OBRIGATORIO: a URL publica/alcancavel da API, com a barra no final.
+      # Rodando local, mantenha localhost. Em VPS com dominio, use https://cobalt.seudominio.com/
+      API_URL: "http://localhost:9000/"
+
+      # Exige chave de API para usar (impede que qualquer um abuse da sua instancia).
+      API_AUTH_REQUIRED: "1"
+      API_KEY_URL: "file:///keys.json"
+
+      # (Opcional) cookies para servicos que exigem login (ex.: YouTube).
+      # Descomente aqui e o volume abaixo, e crie um cookies.json.
+      # COOKIE_PATH: "/cookies.json"
+    volumes:
+      - ./keys.json:/keys.json:ro
+      # - ./cookies.json:/cookies.json:ro

@@ -1,0 +1,15 @@
+node_modules
+bin
+deploy
+scripts
+npm-debug.log
+.env
+keys.json
+cookies.json
+.git
+.gitignore
+README.md
+*.md
+docker-compose*.yml
+Dockerfile
+.dockerignore

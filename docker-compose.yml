@@ -1,0 +1,43 @@
+# Stack completa: cobalt + bot, na mesma rede docker.
+# Na VPS:
+#   docker compose up -d --build          # sobe tudo
+#   docker compose run --rm bot node src/deploy-commands.js   # registra /baixar (uma vez)
+#   docker compose logs -f bot            # acompanha os logs
+#
+# O bot fala com o cobalt pela rede interna (http://cobalt-api:9000/), entao o
+# cobalt NAO precisa ser exposto na internet nem ter dominio/HTTPS.
+
+services:
+  cobalt-api:
+    image: ghcr.io/imputnet/cobalt:11
+    init: true
+    read_only: true
+    restart: unless-stopped
+    container_name: cobalt-api
+    environment:
+      # Como o bot alcanca o cobalt dentro da rede docker (use o nome do servico).
+      API_URL: "http://cobalt-api:9000/"
+      API_AUTH_REQUIRED: "1"
+      API_KEY_URL: "file:///keys.json"
+      # COOKIE_PATH: "/cookies.json"   # descomente p/ YouTube (e o volume abaixo)
+    volumes:
+      - ./keys.json:/keys.json:ro
+      # - ./cookies.json:/cookies.json:ro
+    # Sem "ports:" -> o cobalt fica acessivel SO para o bot (mais seguro).
+    # Para testar de fora, descomente:
+    # ports:
+    #   - "9000:9000/tcp"
+    expose:
+      - "9000"
+
+  bot:
+    build: .
+    restart: unless-stopped
+    container_name: discord-bot
+    depends_on:
+      - cobalt-api
+    env_file:
+      - .env
+    environment:
+      # Sobrescreve o COBALT_BASE_URL do .env para usar a rede interna do docker.
+      COBALT_BASE_URL: "http://cobalt-api:9000/"

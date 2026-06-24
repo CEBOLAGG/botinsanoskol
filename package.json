@@ -1,0 +1,20 @@
+{
+  "name": "botinsanoskol",
+  "version": "1.0.0",
+  "description": "Bot de Discord que baixa videos/midias de um link via Cobalt, usando slash command e Components v2.",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "deploy": "node src/deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.19.3",
+    "dotenv": "^16.4.5",
+    "sharp": "^0.35.2"
+  }
+}

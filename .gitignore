@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.log
+keys.json
+cookies.json
+
+# Binarios grandes (yt-dlp.exe, ffmpeg.exe) — baixados via setup, nao versionados
+bin/
+
+# clone nativo do cobalt (usa-se a imagem docker oficial)
+cobalt/

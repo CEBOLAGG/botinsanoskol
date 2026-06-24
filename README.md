@@ -150,28 +150,34 @@ RAM)** de graça pra sempre — sobra pra rodar bot + cobalt. Todo o stack é
 - **Não precisa abrir porta nenhuma** no firewall: o bot só faz conexão de saída
   e o cobalt fica interno na rede do Docker.
 
-**2. Crie a pasta no servidor e envie o projeto**
-
-Primeiro crie a pasta (conectado via SSH):
+**2. Clone o repositório (no servidor, via SSH)**
 ```bash
-ssh ubuntu@SEU_IP "mkdir -p ~/botinsanoskol"
+ssh ubuntu@SEU_IP
+sudo apt update && sudo apt install -y git
+git clone https://github.com/CEBOLAGG/botinsanoskol
+cd botinsanoskol
 ```
-Depois, do seu PC (PowerShell), copie os arquivos necessários (sem
-`node_modules`/`bin`, que o Docker recria) — rode do diretório do projeto:
-```powershell
-scp -r src package.json package-lock.json Dockerfile docker-compose.yml `
-    .env keys.json deploy ubuntu@SEU_IP:~/botinsanoskol/
-```
-> O `.env` e o `keys.json` vão junto (têm seus segredos). Eles estão no
-> `.gitignore`, então via `git clone` não viriam — por isso o `scp`.
 
-**3. Suba tudo (um comando)**
+**3. Crie o `.env` com seus segredos**
 ```bash
-cd ~/botinsanoskol
+cp .env.example .env
+nano .env     # preencha DISCORD_TOKEN e DISCORD_CLIENT_ID (e DISCORD_GUILD_ID se quiser)
+```
+> O `.env`, `keys.json` e `cookies.json` estão no `.gitignore` — por isso não
+> vêm no clone. O `keys.json` e a `COBALT_API_KEY` o script gera/sincroniza
+> sozinho no próximo passo.
+
+**4. Suba tudo (um comando)**
+```bash
 bash deploy/oracle-setup.sh
 ```
-O script instala o Docker, sobe **bot + cobalt**, registra o `/baixar` e mostra
-os logs. Pronto — online 24/7 e reinicia sozinho.
+O script instala o Docker, gera o `keys.json`, sobe **bot + cobalt**, registra o
+`/baixar` e mostra os logs. Pronto — online 24/7 e reinicia sozinho.
+
+**Atualizar depois** (quando houver mudanças no repo):
+```bash
+cd ~/botinsanoskol && git pull && bash deploy/oracle-setup.sh
+```
 
 > **YouTube com cookies (opcional):** se algum vídeo exigir login, gere um
 > `cookies.json`, descomente `COOKIE_PATH`/volume no `docker-compose.yml` (serve
@@ -269,6 +275,8 @@ botinsanoskol/
 ├── bin/                       # yt-dlp.exe + ffmpeg.exe (NÃO versionado; ver setup)
 ├── scripts/
 │   └── setup-bin.ps1          # baixa yt-dlp + ffmpeg para bin/ (Windows)
+├── deploy/
+│   └── oracle-setup.sh        # setup de 1 comando na Oracle/VPS (Linux)
 ├── Dockerfile                 # imagem do bot (com ffmpeg + yt-dlp)
 ├── docker-compose.yml         # stack completa: cobalt + bot (deploy na VPS)
 ├── docker-compose.cobalt.yml  # só o cobalt (quando o bot roda fora do Docker)

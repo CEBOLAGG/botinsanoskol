@@ -1,0 +1,25 @@
+# Fly.io — app do BOT (worker 24/7, SEM servidor HTTP).
+# Troque "SEU-APP" pelo nome real do seu app. Veja "Deploy no Fly.io" no README.
+#
+# Deploy:
+#   fly launch --no-deploy --copy-config --name SEU-APP   # cria o app sem subir
+#   fly secrets set DISCORD_TOKEN=xxx DISCORD_CLIENT_ID=yyy
+#   fly deploy
+
+app = "SEU-APP"
+primary_region = "gru"   # Sao Paulo (mais perto do BR)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # cobalt roda como um 2o app Fly, acessivel pela rede privada (.flycast).
+  # Troque pelo nome do app do cobalt:
+  COBALT_BASE_URL = "http://SEU-APP-cobalt.flycast:9000/"
+  # YouTube nao depende do cobalt (usa yt-dlp embutido na imagem).
+
+# Sem [http_service]: o bot nao serve HTTP. A maquina roda o processo 24/7.
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"   # se der OOM no startup (sharp), suba para 1024mb

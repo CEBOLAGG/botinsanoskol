@@ -1,0 +1,32 @@
+# Fly.io — app do COBALT (so a imagem oficial; usado pelos servicos que NAO sao YouTube).
+# Fica acessivel SO pela rede privada do Fly (.flycast) — nao exponha publicamente,
+# senao vira um downloader aberto.
+#
+# Deploy:
+#   fly launch --no-deploy --copy-config -c deploy/fly-cobalt.toml --name SEU-APP-cobalt
+#   fly deploy -c deploy/fly-cobalt.toml
+#   # deixe SO o IP privado (remova os publicos para nao expor):
+#   fly ips list -a SEU-APP-cobalt
+#   fly ips release <IP_PUBLICO_V4_E_V6> -a SEU-APP-cobalt
+
+app = "SEU-APP-cobalt"
+primary_region = "gru"
+
+[build]
+  image = "ghcr.io/imputnet/cobalt:11"
+
+[env]
+  # Precisa bater com como o bot alcanca o cobalt (.flycast da rede privada).
+  API_URL = "http://SEU-APP-cobalt.flycast:9000/"
+
+# O fly-proxy precisa de um service para rotear o .flycast ate a porta do cobalt.
+[http_service]
+  internal_port = 9000
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"

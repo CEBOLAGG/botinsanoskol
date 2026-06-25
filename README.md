@@ -252,42 +252,6 @@ Pronto — o bot fica online 24/7 e reinicia sozinho (`restart: unless-stopped`)
 > coloque essa URL no `COBALT_BASE_URL` do bot. Mais trabalho — só vale se o bot
 > não puder ficar na mesma máquina.
 
-### Deploy no Fly.io
-
-O Fly **não roda `docker-compose`** — cada app é uma imagem. Então viram **2 apps**:
-o **bot** (`fly.toml`) e o **cobalt** (`deploy/fly-cobalt.toml`), conversando pela
-rede privada do Fly. O Fly **não tem mais free tier** (sai ~US$2–4/mês por máquina).
-
-```bash
-fly auth login
-
-# 1) cobalt (privado, só a rede interna usa)
-fly launch --no-deploy --copy-config -c deploy/fly-cobalt.toml --name SEU-APP-cobalt
-fly deploy -c deploy/fly-cobalt.toml
-fly ips list -a SEU-APP-cobalt          # remova os IPs PUBLICOS p/ nao expor:
-fly ips release <IP_PUBLICO> -a SEU-APP-cobalt
-
-# 2) bot (ajuste COBALT_BASE_URL no fly.toml para SEU-APP-cobalt.flycast)
-fly launch --no-deploy --copy-config --name SEU-APP
-fly secrets set DISCORD_TOKEN=xxx DISCORD_CLIENT_ID=yyy   # (DISCORD_GUILD_ID se quiser)
-fly deploy
-
-# 3) registra o /baixar (uma vez)
-fly ssh console -a SEU-APP -C "node src/deploy-commands.js"
-```
-
-**Pontos de atenção no Fly:**
-- O `fly.toml` do bot **não tem `[http_service]`** de propósito — é um worker 24/7.
-  Se você rodar `fly launch` do zero, ele tenta adicionar um e fazer health-check
-  HTTP (que falha, pois não há servidor web). Use o `fly.toml` deste repo.
-- **Segredos** vão por `fly secrets set` (o `.env` não é usado no Fly).
-- O `keys.json` do cobalt não é necessário aqui (cobalt fica **privado**, sem auth).
-- Se 512 MB der OOM no startup do bot (por causa do `sharp`), suba para 1024 MB.
-
-> **Quer de graça com bot + cobalt?** A **Oracle** (acima) roda o `docker-compose`
-> inteiro de graça e é mais simples. O Fly compensa se você já usa e não se importa
-> com o custo pequeno.
-
 ---
 
 ## Limitações conhecidas (e decisões já tomadas)
